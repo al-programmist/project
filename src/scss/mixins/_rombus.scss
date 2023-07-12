@@ -1,0 +1,18 @@
+@charset "UTF-8";
+
+@mixin rombus($size:100px) {
+	display: inline-block;
+	width: $size;
+	height: $size;
+	clip-path:
+		polygon(
+			0 50%,
+			50% 0,
+			50% 0,
+			100% 50%,
+			100% 50%,
+			50% 100%,
+			50% 100%,
+			0 50%
+	);
+}
