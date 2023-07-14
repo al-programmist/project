@@ -1,7 +1,7 @@
 "use strict";
 
 import gulp from 'gulp';
-import {path} from "./gulp/config/path.js";
+import {$path} from "./gulp/config/path.js";
 import {breakpoints} from "./gulp/config/breakpoints.js";
 import {reloader} from "./gulp/config/reloader.js";
 import {faviconConfig} from "./gulp/config/favicon-config.js";
@@ -41,21 +41,15 @@ import uglify from "gulp-uglify";
 
 const {src, dest} = gulp;
 const sass = gulpSass(dartSass);
-const __path = path();
-const __breakpoints = breakpoints();
-const __reloader = reloader(__path.buildPath);
-const __faviconConfig = faviconConfig();
-const __imagesConfig = imagesConfig();
-const __spriteConfig = spriteConfig();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const config = (callback) => {
-	console.log(__path);
-	console.log(__breakpoints);
-	console.log(__reloader);
-	console.log(__faviconConfig);
-	console.log(__spriteConfig);
+	console.log($path);
+	console.log(breakpoints);
+	console.log(reloader);
+	console.log(faviconConfig);
+	console.log(spriteConfig);
 	callback();
 }
 
@@ -65,8 +59,8 @@ export const config = (callback) => {
  * @returns {*}
  */
 const htaccess = () => {
-	return src(__path.src.htaccess, {base: __path.srcPath + "/"})
-					.pipe(dest(__path.build.htaccess))
+	return src($path.src.htaccess, {base: $path.srcPath + "/"})
+					.pipe(dest($path.build.htaccess))
 }
 
 /**
@@ -74,8 +68,8 @@ const htaccess = () => {
  * @returns {*}
  */
 const favicon = () => {
-	return src(__path.src.favcache + "/*", {base: __path.srcPath + "/favicon/generated/"})
-					.pipe(dest(__path.build.favicons))
+	return src($path.src.favcache + "/*", {base: $path.srcPath + "/favicon/generated/"})
+					.pipe(dest($path.build.favicons))
 }
 
 /**
@@ -83,7 +77,7 @@ const favicon = () => {
  * @param done
  */
 const clean = (done) => {
-	deleteSync([__path.clean]);
+	deleteSync([$path.clean]);
 	done();
 }
 
@@ -92,9 +86,9 @@ const clean = (done) => {
  * @param done
  */
 const setTarget = (done) => {
-	if(!fs.existsSync(__path.clean)) {
-		fs.mkdirSync(__path.clean);
-		console.log('📁  Каталог создан:', __path.clean);
+	if(!fs.existsSync($path.clean)) {
+		fs.mkdirSync($path.clean);
+		console.log('📁  Каталог создан:', $path.clean);
 	}
 	done();
 }
@@ -103,7 +97,7 @@ const setTarget = (done) => {
  * Запуск сервера
  */
 const serve = () => {
-	browserSync.init(__reloader);
+	browserSync.init(reloader);
 }
 
 /**
@@ -111,9 +105,9 @@ const serve = () => {
  * @returns {*}
  */
 const woff = () => {
-	return src(__path.src.fonts, {base: __path.srcPath + "/fonts/"})
+	return src($path.src.fonts, {base: $path.srcPath + "/fonts/"})
 					.pipe(ttf2woff())
-					.pipe(dest(__path.build.fonts))
+					.pipe(dest($path.build.fonts))
 }
 
 /**
@@ -121,9 +115,9 @@ const woff = () => {
  * @returns {*}
  */
 const woff2 = () => {
-	return src(__path.src.fonts, {base: __path.srcPath + "/fonts/"})
+	return src($path.src.fonts, {base: $path.srcPath + "/fonts/"})
 					.pipe(ttf2woff2())
-					.pipe(dest(__path.build.fonts))
+					.pipe(dest($path.build.fonts))
 }
 
 /**
@@ -138,14 +132,14 @@ const font = gulp.parallel(
  * Запускает слежение за выбранными каталогами
  */
 const lookup = () => {
-	gulp.watch([__path.watch.html], {usePolling: true}, html);
-	gulp.watch(__path.watch.css, {usePolling: true}, css);
-	gulp.watch(__path.watch.js, {usePolling: true}, js);
-	gulp.watch([__path.watch.images], images);
-	gulp.watch([__path.watch.icons], icons);
-	gulp.watch([__path.watch.svg], sprites);
-	gulp.watch([__path.watch.fonts], font);
-	gulp.watch([__path.watch.htaccess], {usePolling: true}, htaccess);
+	gulp.watch([$path.watch.html], {usePolling: true}, html);
+	gulp.watch($path.watch.css, {usePolling: true}, css);
+	gulp.watch($path.watch.js, {usePolling: true}, js);
+	gulp.watch([$path.watch.images], images);
+	gulp.watch([$path.watch.icons], icons);
+	gulp.watch([$path.watch.svg], sprites);
+	gulp.watch([$path.watch.fonts], font);
+	gulp.watch([$path.watch.htaccess], {usePolling: true}, htaccess);
 }
 
 /**
@@ -153,7 +147,7 @@ const lookup = () => {
  * @param done
  */
 export const favupdate = (done) => {
-	let currentVersion = JSON.parse(fs.readFileSync(__path.faviconDataFile)).version;
+	let currentVersion = JSON.parse(fs.readFileSync($path.faviconDataFile)).version;
 	realFavicon.checkForUpdates(currentVersion, function (err) {
 		if (err) {
 			throw err;
@@ -167,7 +161,7 @@ export const favupdate = (done) => {
  * @param done
  */
 export const favgenerate = (done) => {
-	realFavicon.generateFavicon(__faviconConfig, function () {
+	realFavicon.generateFavicon(faviconConfig, function () {
 		done();
 	});
 }
@@ -177,12 +171,12 @@ export const favgenerate = (done) => {
  * @returns {*}
  */
 export const images = () => {
-	return src(__path.src.images, {base: __path.srcPath + "/images/"})
-					.pipe(responsive(__imagesConfig.breakpoints, __imagesConfig.settings))
-					.pipe(image(__imagesConfig.compression))
-					.pipe(dest(__path.build.images))
+	return src($path.src.images, {base: $path.srcPath + "/images/"})
+					.pipe(responsive(imagesConfig.breakpoints, imagesConfig.settings))
+					.pipe(image(imagesConfig.compression))
+					.pipe(dest($path.build.images))
 					.pipe(webp())
-					.pipe(dest(__path.build.images))
+					.pipe(dest($path.build.images))
 					.pipe(browserSync.stream())
 }
 
@@ -191,11 +185,11 @@ export const images = () => {
  * @returns {*}
  */
 export const icons = () => {
-	return src(__path.src.icons, {base: __path.srcPath + "/icon/"})
-					.pipe(image(__imagesConfig.compression))
-					.pipe(dest(__path.build.icons))
+	return src($path.src.icons, {base: $path.srcPath + "/icon/"})
+					.pipe(image(imagesConfig.compression))
+					.pipe(dest($path.build.icons))
 					.pipe(webp())
-					.pipe(dest(__path.build.icons))
+					.pipe(dest($path.build.icons))
 					.pipe(browserSync.stream())
 }
 
@@ -204,16 +198,16 @@ export const icons = () => {
  * @returns {*}
  */
 export const sprites = () => {
-	let config = spriteConfig();
+	let config = spriteConfig;
 
-	return src(__path.src.svg, {base: __path.srcPath + "/icon/"})
+	return src($path.src.svg, {base: $path.srcPath + "/icon/"})
 					.pipe(plumber())
 					.pipe(svgSprite(config))
 					.on('error', notifier.onError({
 						message: "Error: <%= error.message %>",
 						title: "Spite creation error"
 					}))
-					.pipe(dest(__path.build.svg))
+					.pipe(dest($path.build.svg))
 					.pipe(browserSync.stream())
 }
 
@@ -222,12 +216,12 @@ export const sprites = () => {
  * @returns {*}
  */
 export const html = () => {
-	return src(__path.src.html, {base: __path.srcPath})
+	return src($path.src.html, {base: $path.srcPath})
 					.pipe(sourcemaps.init())
 					.pipe(plumber())
 					.pipe(pug({pretty: true}))
 					.pipe(sourcemaps.write('.'))
-					.pipe(dest(__path.build.html))
+					.pipe(dest($path.build.html))
 					.pipe(browserSync.stream())
 }
 
@@ -236,7 +230,7 @@ export const html = () => {
  * @returns {*}
  */
 export const htmllint = () => {
-	return src(__path.src.html, {base: __path.srcPath})
+	return src($path.src.html, {base: $path.srcPath})
 					.pipe(plumber())
 					.pipe(pugLinter({
 						reporter: pugLintStylish,
@@ -254,7 +248,7 @@ export const htmllint = () => {
  * @returns {*}
  */
 export const css = () => {
-	return src(__path.src.css, {base: __path.srcPath + "/scss/"})
+	return src($path.src.css, {base: $path.srcPath + "/scss/"})
 					.pipe(sourcemaps.init())
 					.pipe(plumber())
 					.pipe(sass({
@@ -271,7 +265,7 @@ export const css = () => {
 					.pipe(cssBeautify({
 						autosemicolon: true
 					}))
-					.pipe(dest(__path.build.css))
+					.pipe(dest($path.build.css))
 					.pipe(cssnano({
 						zIndex: false,
 						discardComments: {
@@ -284,7 +278,7 @@ export const css = () => {
 						extname: ".css"
 					}))
 					.pipe(sourcemaps.write('.'))
-					.pipe(dest(__path.build.css))
+					.pipe(dest($path.build.css))
 					.pipe(browserSync.stream())
 }
 
@@ -293,18 +287,18 @@ export const css = () => {
  * @returns {*}
  */
 export const js = () => {
-	return src(__path.src.js, {base: __path.srcPath + "js/"})
+	return src($path.src.js, {base: $path.srcPath + "js/"})
 					.pipe(sourcemaps.init())
 					.pipe(plumber())
 					.pipe(rigger())
-					.pipe(dest(__path.build.js))
+					.pipe(dest($path.build.js))
 					.pipe(uglify())
 					.pipe(rename({
 						suffix: ".min",
 						extname: ".js"
 					}))
 					.pipe(sourcemaps.write())
-					.pipe(dest(__path.build.js))
+					.pipe(dest($path.build.js))
 					.pipe(browserSync.stream())
 }
 
