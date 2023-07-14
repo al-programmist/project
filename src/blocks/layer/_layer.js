@@ -1,5 +1,3 @@
-'use strict'
-
 const xRontationCenter = (x) => {
 	return x - window.innerWidth / 2;
 }
@@ -15,3 +13,5 @@ document.addEventListener('mousemove', event => {
 		style: `--move-x: ${yRontationCenter(event.clientY) * sensivityX}deg; --move-y: ${xRontationCenter(event.clientX) * sensivityY}deg`
 	})
 });
+
+

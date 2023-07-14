@@ -1,0 +1,41 @@
+.hero {
+	&__content {
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	&__header {
+		font-size: calc(var(--index) * 2);
+		line-height: 1.15;
+		letter-spacing: calc(var(--index) * -.15);
+
+		span {
+			display: block;
+		}
+	}
+
+	&__description {
+		margin: 0;
+		padding: 0;
+		max-width: calc(var(--index) * 23);
+		font-family: "Merriweather", $font-family-sans-serif;
+		font-size: calc(var(--index) * .65);
+		line-height: 3;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	button {
+		&.button {
+			padding: calc(var(--index) * .7) calc(var(--index) * 1.25);
+			font-family: $font-family-sans-serif;
+			font-size: calc(var(--index) * .71);
+			letter-spacing: -.02vw;
+			font-weight: 600;
+			text-transform: uppercase;
+			border-radius: 10em;
+			border: 3px solid rgba(255, 255, 255, .4);
+			outline: none; // Пока отключить, потом заменить на стили доступности
+		}
+	}
+}

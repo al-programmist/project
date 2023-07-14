@@ -1,0 +1,14 @@
+section.layers
+	.layers__container
+		.layers__item.layer-1.forest
+			+image("images/", "layer-1", "jpg", "layer-1", "layer-1")
+		.layers__item.layer-2.branch
+			+image("images/", "layer-2", "png", "layer-2", "layer-2")
+		.layers__item.layer-3.hero
+			include ../hero/_hero.pug
+		.layers__item.layer-4.weather
+			include ../rain/_rain.pug
+		.layers__item.layer-5.shadow
+			+image("images/", "layer-5", "png", "layer-5", "layer-5")
+		.layers__item.layer-6.water
+			+image("images/", "layer-6", "png", "layer-6", "layer-6")
