@@ -8,6 +8,7 @@ import {faviconConfig} from "./gulp/favicon-config.js";
 import {imagesConfig} from "./gulp/images-config.js";
 import {spriteConfig} from "./gulp/sprite-config.js";
 import {argvConfig} from "./gulp/argv-config.js";
+import {webpackConfig} from "./gulp/webpack.config.js"
 import browserSync from "browser-sync";
 import {deleteSync} from "del";
 import ttf2woff from "gulp-ttf2woff";
@@ -19,8 +20,10 @@ import image from "gulp-image";
 import webp from "gulp-webp";
 import plumber from "gulp-plumber";
 import svgSprite from "gulp-svg-sprite";
-import notifier from "gulp-notify";
-import pugLinter from "gulp-pug-linter";
+import $notify from "gulp-notify";
+import $if from "gulp-if";
+import $newer from "gulp-newer";
+import $debug from "gulp-debug";
 import pug from "gulp-pug";
 import htmlhint from "gulp-htmlhint";
 import reporter from "gulp-reporter";
@@ -53,6 +56,8 @@ argv.minifyCss = argv.minifyCss !== null ? !!argv.minifyCss : argv.minify;
 argv.minifyJs = argv.minifyJs !== null ? !!argv.minifyJs : argv.minify;
 argv.minifySvg = argv.minifySvg !== null ? !!argv.minifySvg : argv.minify;
 
+if (argv.noResponsive) argv.responsive = false;
+
 if (argv.ci) {
 	argv.cache = false;
 	argv.notify = false;
@@ -81,6 +86,8 @@ export const config = (callback) => {
  */
 const htaccess = () => {
 	return src($path.src.htaccess, {base: $path.srcPath + "/"})
+					.pipe($if(argv.cache, $newer($path.buildPath)))
+					.pipe($if(argv.debug, $debug()))
 					.pipe(dest($path.build.htaccess))
 }
 
@@ -90,6 +97,8 @@ const htaccess = () => {
  */
 const favicon = () => {
 	return src($path.src.favcache + "/*", {base: $path.srcPath + "/favicon/generated/"})
+					.pipe($if(argv.cache, $newer($path.buildPath)))
+					.pipe($if(argv.debug, $debug()))
 					.pipe(dest($path.build.favicons))
 }
 
@@ -127,6 +136,8 @@ const serve = () => {
  */
 const woff = () => {
 	return src($path.src.fonts, {base: $path.srcPath + "/fonts/"})
+					.pipe($if(argv.cache, $newer($path.buildPath)))
+					.pipe($if(argv.debug, $debug()))
 					.pipe(ttf2woff())
 					.pipe(dest($path.build.fonts))
 }
@@ -137,17 +148,21 @@ const woff = () => {
  */
 const woff2 = () => {
 	return src($path.src.fonts, {base: $path.srcPath + "/fonts/"})
+					.pipe($if(argv.cache, $newer($path.buildPath)))
+					.pipe($if(argv.debug, $debug()))
 					.pipe(ttf2woff2())
 					.pipe(dest($path.build.fonts))
 }
 
 /**
- * Запуск конвертации всех шрифтов
+ * Запускает все конвертации шрифтов
  */
-const font = gulp.parallel(
-				woff,
-				woff2,
-);
+const font = () => {
+	gulp.parallel(
+					woff,
+					woff2,
+	);
+}
 
 /**
  * Запускает слежение за выбранными каталогами
@@ -193,10 +208,11 @@ export const favgenerate = (done) => {
  */
 export const images = () => {
 	return src($path.src.images, {base: $path.srcPath + "/images/"})
-					.pipe(responsive(imagesConfig.breakpoints, imagesConfig.settings))
+					.pipe($if(argv.responsive, responsive(imagesConfig.breakpoints, imagesConfig.settings)))
 					.pipe(image(imagesConfig.compression))
 					.pipe(dest($path.build.images))
 					.pipe(webp())
+					.pipe($if(argv.debug, $debug()))
 					.pipe(dest($path.build.images))
 					.pipe(browserSync.stream())
 }
@@ -252,16 +268,16 @@ export const html = () => {
  */
 export const htmllint = () => {
 	return src($path.src.html, {base: $path.srcPath})
-					.pipe(plumber())
-					.pipe(pugLinter({
-						reporter: pugLintStylish,
-					}))
-					.pipe(pug())
-					.pipe(htmlhint('.htmlhintrc'))
-					.pipe(reporter())
-					.pipe(htmlValidator.analyzer({ignoreLevel: 'info'}))
-					.pipe(htmlValidator.reporter())
-					.pipe(bemValidator())
+					// .pipe(plumber())
+					// .pipe(pugLinter({
+					// 	reporter: pugLintStylish,
+					// }))
+					// .pipe(pug())
+					// .pipe(htmlhint('.htmlhintrc'))
+					// .pipe(reporter())
+					// .pipe(htmlValidator.analyzer({ignoreLevel: 'info'}))
+					// .pipe(htmlValidator.reporter())
+					// .pipe(bemValidator())
 }
 
 /**
@@ -326,12 +342,13 @@ export const js = () => {
 export const build = gulp.series(
 				clean,
 				setTarget,
-				font,
+				woff,
+				woff2,
 				favicon,
 				htaccess,
 				icons,
+				images,
 				// sprites,
-				// images,
 				// gulp.parallel(
 				// 				html,
 				// 				css,

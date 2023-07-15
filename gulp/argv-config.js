@@ -8,7 +8,7 @@ const argvConfig = {
 	minifySvg: null,
 	notify: true,
 	open: true,
-	responsiveImg: true,
+	responsive: true,
 	spa: false,
 	throwErrors: false,
 	robots: true,

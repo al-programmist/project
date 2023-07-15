@@ -1,6 +1,6 @@
 import {$path} from "./path.js";
 
-module.exports = {
+const webpackConfig = {
 	entry: $path.src.js,
 	output: {
 		path: $path.build.js,
@@ -31,3 +31,5 @@ module.exports = {
 	},
 	devtool: 'source-map',
 };
+
+export {webpackConfig}
