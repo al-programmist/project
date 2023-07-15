@@ -1,12 +1,13 @@
 "use strict";
 
 import gulp from 'gulp';
-import {$path} from "./gulp/config/path.js";
-import {breakpoints} from "./gulp/config/breakpoints.js";
-import {reloader} from "./gulp/config/reloader.js";
-import {faviconConfig} from "./gulp/config/favicon-config.js";
-import {imagesConfig} from "./gulp/config/images-config.js";
-import {spriteConfig} from "./gulp/config/sprite-config.js";
+import {$path} from "./gulp/path.js";
+import {breakpoints} from "./gulp/breakpoints.js";
+import {reloader} from "./gulp/reloader.js";
+import {faviconConfig} from "./gulp/favicon-config.js";
+import {imagesConfig} from "./gulp/images-config.js";
+import {spriteConfig} from "./gulp/sprite-config.js";
+import {argvConfig} from "./gulp/argv-config.js";
 import browserSync from "browser-sync";
 import {deleteSync} from "del";
 import ttf2woff from "gulp-ttf2woff";
@@ -20,7 +21,6 @@ import plumber from "gulp-plumber";
 import svgSprite from "gulp-svg-sprite";
 import notifier from "gulp-notify";
 import pugLinter from "gulp-pug-linter";
-import pugLintStylish from "puglint-stylish";
 import pug from "gulp-pug";
 import htmlhint from "gulp-htmlhint";
 import reporter from "gulp-reporter";
@@ -33,23 +33,44 @@ import cssnano from "gulp-cssnano";
 import stripComments from "gulp-strip-css-comments";
 import rename from "gulp-rename";
 import gulpSass from "gulp-sass";
-import dartSass from "sass";
+import * as dartSass from "sass";
 import {fileURLToPath} from "url";
 import {dirname} from "path";
-import rigger from "gulp-rigger";
-import uglify from "gulp-uglify";
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
 const {src, dest} = gulp;
 const sass = gulpSass(dartSass);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const argv = yargs(hideBin(process.argv))
+				.config(argvConfig).argv;
+
+argv.minify = !!argv.minify;
+argv.minifyHtml = argv.minifyHtml !== null ? !!argv.minifyHtml : argv.minify;
+argv.minifyCss = argv.minifyCss !== null ? !!argv.minifyCss : argv.minify;
+argv.minifyJs = argv.minifyJs !== null ? !!argv.minifyJs : argv.minify;
+argv.minifySvg = argv.minifySvg !== null ? !!argv.minifySvg : argv.minify;
+
+if (argv.ci) {
+	argv.cache = false;
+	argv.notify = false;
+	argv.open = false;
+	argv.throwErrors = true;
+
+	webpackConfig.mode = 'production';
+} else {
+	webpackConfig.mode = webpackConfig.mode || 'development';
+}
+
 export const config = (callback) => {
-	console.log($path);
-	console.log(breakpoints);
-	console.log(reloader);
-	console.log(faviconConfig);
-	console.log(spriteConfig);
+	console.log(argv)
+	// console.log($path);
+	// console.log(breakpoints);
+	// console.log(reloader);
+	// console.log(faviconConfig);
+	// console.log(spriteConfig);
 	callback();
 }
 
@@ -217,10 +238,10 @@ export const sprites = () => {
  */
 export const html = () => {
 	return src($path.src.html, {base: $path.srcPath})
-					.pipe(sourcemaps.init())
-					.pipe(plumber())
-					.pipe(pug({pretty: true}))
-					.pipe(sourcemaps.write('.'))
+					// .pipe(sourcemaps.init())
+					// .pipe(plumber())
+					// .pipe(pug({pretty: true}))
+					// .pipe(sourcemaps.write('.'))
 					.pipe(dest($path.build.html))
 					.pipe(browserSync.stream())
 }
@@ -249,35 +270,35 @@ export const htmllint = () => {
  */
 export const css = () => {
 	return src($path.src.css, {base: $path.srcPath + "/scss/"})
-					.pipe(sourcemaps.init())
-					.pipe(plumber())
-					.pipe(sass({
-						sourceMap: true,
-						errLogToConsole: true,
-						outputStyle: "expanded",
-						includePaths: [__dirname + "/node_modules"]
-					})
-									.on('error', notifier.onError({
-										message: "Error: <%= error.message %>",
-										title: "Style Error"
-									})))
-					.pipe(autoprefixer())
-					.pipe(cssBeautify({
-						autosemicolon: true
-					}))
-					.pipe(dest($path.build.css))
-					.pipe(cssnano({
-						zIndex: false,
-						discardComments: {
-							removeAll: true
-						}
-					}))
-					.pipe(stripComments())
-					.pipe(rename({
-						suffix: ".min",
-						extname: ".css"
-					}))
-					.pipe(sourcemaps.write('.'))
+					// .pipe(sourcemaps.init())
+					// .pipe(plumber())
+					// .pipe(sass({
+					// 	sourceMap: true,
+					// 	errLogToConsole: true,
+					// 	outputStyle: "expanded",
+					// 	includePaths: [__dirname + "/node_modules"]
+					// })
+					// 				.on('error', notifier.onError({
+					// 					message: "Error: <%= error.message %>",
+					// 					title: "Style Error"
+					// 				})))
+					// .pipe(autoprefixer())
+					// .pipe(cssBeautify({
+					// 	autosemicolon: true
+					// }))
+					// .pipe(dest($path.build.css))
+					// .pipe(cssnano({
+					// 	zIndex: false,
+					// 	discardComments: {
+					// 		removeAll: true
+					// 	}
+					// }))
+					// .pipe(stripComments())
+					// .pipe(rename({
+					// 	suffix: ".min",
+					// 	extname: ".css"
+					// }))
+					// .pipe(sourcemaps.write('.'))
 					.pipe(dest($path.build.css))
 					.pipe(browserSync.stream())
 }
@@ -289,15 +310,15 @@ export const css = () => {
 export const js = () => {
 	return src($path.src.js, {base: $path.srcPath + "js/"})
 					.pipe(sourcemaps.init())
-					.pipe(plumber())
-					.pipe(rigger())
-					.pipe(dest($path.build.js))
-					.pipe(uglify())
-					.pipe(rename({
-						suffix: ".min",
-						extname: ".js"
-					}))
-					.pipe(sourcemaps.write())
+					// .pipe(plumber())
+					// .pipe(rigger())
+					// .pipe(dest($path.build.js))
+					// .pipe(uglify())
+					// .pipe(rename({
+					// 	suffix: ".min",
+					// 	extname: ".js"
+					// }))
+					// .pipe(sourcemaps.write())
 					.pipe(dest($path.build.js))
 					.pipe(browserSync.stream())
 }
@@ -307,15 +328,15 @@ export const build = gulp.series(
 				setTarget,
 				font,
 				favicon,
-				icons,
-				sprites,
-				images,
 				htaccess,
-				gulp.parallel(
-								html,
-								css,
-								js,
-				)
+				icons,
+				// sprites,
+				// images,
+				// gulp.parallel(
+				// 				html,
+				// 				css,
+				// 				js,
+				// )
 );
 
 export default gulp.series(

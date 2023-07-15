@@ -34,14 +34,12 @@
     "gulp-rename": "^2.0.0",
     "gulp-reporter": "^2.10.0",
     "gulp-responsive": "^3.0.1",
-    "gulp-rigger": "^0.5.8",
     "gulp-sass": "^5.1.0",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-strip-css-comments": "^2.0.0",
     "gulp-svg-sprite": "^2.0.3",
     "gulp-ttf2woff": "^1.1.1",
     "gulp-ttf2woff2": "^4.0.1",
-    "gulp-uglify": "^3.0.2",
     "gulp-w3c-html-validator": "^5.2.0",
     "gulp-webp": "^4.0.1",
     "path": "^0.12.7",
@@ -51,12 +49,12 @@
     "postcss-scss": "^4.0.6",
     "pug": "^3.0.2",
     "pug-lint": "^2.7.0",
-    "puglint-stylish": "^1.1.0",
     "sass": "^1.59.3",
     "stylelint": "^15.6.0",
     "stylelint-order": "^6.0.3",
     "stylelint-scss": "^4.6.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "yargs": "^17.7.2"
   },
   "dependencies": {
     "bootstrap-4-grid": "^3.4.0"

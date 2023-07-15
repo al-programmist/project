@@ -4,7 +4,7 @@ const srcPath = 'src/';
 const $path = {
     srcPath: srcPath,
     buildPath: buildPath,
-    faviconDataFile: srcPath + "favicon.json",
+    faviconDataFile: srcPath + "favicon/favicon.json",
     clean: buildPath,
 
     build: {
@@ -22,7 +22,7 @@ const $path = {
     src: {
       html: [srcPath + "pages/*.pug", srcPath + "*.pug",],
       css: [srcPath + "scss/*.scss", '!' + srcPath + "scss/_*.scss"],
-      js: [srcPath + "js/*.js", '!' + srcPath + "js/_*.scss"],
+      js: srcPath + "js/main.js",
       images: srcPath + "images/**/*",
       icons: srcPath + "icon/**/*",
       svg: srcPath + "icon/**/*.svg",
