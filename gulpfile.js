@@ -26,7 +26,6 @@ import $newer from "gulp-newer";
 import $debug from "gulp-debug";
 import pug from "gulp-pug";
 import htmlhint from "gulp-htmlhint";
-import reporter from "gulp-reporter";
 import {htmlValidator} from "gulp-w3c-html-validator";
 import bemValidator from "gulp-html-bem-validator";
 import sourcemaps from "gulp-sourcemaps";
@@ -85,10 +84,20 @@ export const config = (callback) => {
  * @returns {*}
  */
 const htaccess = () => {
-	return src($path.src.htaccess, {base: $path.srcPath + "/"})
+	return src($path.src.htaccess, {base: $path.srcPath + "/environment/"})
 					.pipe($if(argv.cache, $newer($path.buildPath)))
 					.pipe($if(argv.debug, $debug()))
 					.pipe(dest($path.build.htaccess))
+}
+/**
+ * Копирует robots
+ * @returns {*}
+ */
+const robots = () => {
+	return src($path.src.robots, {base: $path.srcPath + "/environment/"})
+					.pipe($if(argv.cache, $newer($path.buildPath)))
+					.pipe($if(argv.debug, $debug()))
+					.pipe(dest($path.build.robots))
 }
 
 /**
@@ -342,12 +351,12 @@ export const js = () => {
 export const build = gulp.series(
 				clean,
 				setTarget,
-				woff,
-				woff2,
-				favicon,
 				htaccess,
-				icons,
-				images,
+				robots,
+				// font,
+				// favicon,
+				// icons,
+				// images,
 				// sprites,
 				// gulp.parallel(
 				// 				html,

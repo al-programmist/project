@@ -16,6 +16,7 @@ const $path = {
       svg: buildPath,
       favicons: buildPath + "favicon/",
       fonts: buildPath + "fonts/",
+			robots: buildPath,
       htaccess: buildPath,
     },
 
@@ -29,7 +30,9 @@ const $path = {
       favicons: srcPath + "favicon/favicon-master.png",
       favcache: srcPath + "favicon/generated/",
       fonts: srcPath + "fonts/*",
-      htaccess: srcPath + ".htaccess",
+      htaccess: srcPath + "environment/.htaccess",
+			robots: srcPath + "environment/robots.txt",
+			share: srcPath + "environment/shareSettings.php",
     },
 
     watch: {
