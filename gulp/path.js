@@ -14,6 +14,10 @@ const $path = {
       images: buildPath + "images/",
       icons: buildPath + "icon/",
       svg: buildPath,
+      png: {
+				files: buildPath,
+				css: srcPath + "scss/base/"
+			},
       favicons: buildPath + "favicon/",
       fonts: buildPath + "fonts/",
 			robots: buildPath,
@@ -27,6 +31,11 @@ const $path = {
       images: srcPath + "images/**/*",
       icons: srcPath + "icon/**/*",
       svg: srcPath + "icon/**/*.svg",
+      png: {
+				files: srcPath + "icon/**/*.png",
+				retinaSrcFilter: srcPath + 'icon/png/*@2x.png',
+				cssTemplate: srcPath + 'scss/base/_sprite.hbs',
+			},
       favicons: srcPath + "favicon/favicon-master.png",
       favcache: srcPath + "favicon/generated/",
       fonts: srcPath + "fonts/*",

@@ -11,7 +11,9 @@ const argvConfig = {
 	responsive: true,
 	spa: false,
 	throwErrors: false,
-	robots: true,
+	robots: false,
+	share: false,
+	htaccess: false,
 }
 
 export {argvConfig}
