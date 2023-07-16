@@ -17,7 +17,7 @@ cd ..
 
 echo "Регистрируем блоки..."
 echo "include $1/_$1.pug" >> index.pug
-echo "@import \"$1/_$1\";" >> index.scss
-echo "//= $1/_$1.js" >> index.js
+echo "@import \"$1/$1\";" >> index.scss
+echo "import \"./$1/_$1\";">> index.js
 
 echo "Готово!"

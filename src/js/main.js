@@ -1,4 +1,9 @@
-import './vendor';
+import './functions/index';
+import './base/index';
+import './components/index';
+
+import '../blocks/index';
+
 // import './helpers';
 // import './components/social';
 // import {ieFix} from './vendor/ie-fix';

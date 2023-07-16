@@ -10,7 +10,7 @@ const $path = {
     build: {
       html: buildPath,
       css: buildPath + "css/",
-      js: buildPath + "js/",
+      js: buildPath + "js/js",
       images: buildPath + "images/",
       icons: buildPath + "icon/",
       svg: buildPath,

@@ -453,7 +453,7 @@ export const htmllint = () => {
 const lookup = () => {
 	watch([$path.watch.html], {usePolling: true}, html);
 	watch($path.watch.css, {usePolling: true}, css);
-	// gulp.watch($path.watch.js, {usePolling: true}, js);
+	watch($path.watch.js, {usePolling: true}, js);
 	watch([$path.watch.icons], icons);
 	watch([$path.watch.png], spritepng);
 	watch([$path.watch.images], images);
@@ -473,7 +473,7 @@ export const build = series(
 				parallel(
 								html,
 								css,
-				// 				js,
+								js,
 				)
 );
 
