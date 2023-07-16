@@ -1,9 +1,10 @@
 import {$path} from "./path.js";
+import {resolve, dirname} from "path";
 
 const webpackConfig = {
 	entry: $path.src.js,
 	output: {
-		path: $path.build.js,
+		path: resolve(dirname($path.build.js)),
 		filename: '[name].js',
 	},
 	module: {
@@ -14,9 +15,13 @@ const webpackConfig = {
 				use: {
 					loader: 'babel-loader',
 				},
+				resolve: {
+					fullySpecified: false,
+				}
 			},
 		],
 	},
+
 	optimization: {
 		splitChunks: {
 			cacheGroups: {

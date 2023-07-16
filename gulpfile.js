@@ -40,14 +40,15 @@ import sourcemaps from "gulp-sourcemaps";
 import autoprefixer from "autoprefixer";
 import postcss from "gulp-postcss";
 import cssnano from "cssnano";
-import stripComments from "gulp-strip-css-comments";
 import rename from "gulp-rename";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
 import {fileURLToPath} from "url";
 import {dirname} from "path";
-import yargs from 'yargs'
-import {hideBin} from 'yargs/helpers'
+import yargs from 'yargs';
+import {hideBin} from 'yargs/helpers';
+import pkg from "webpack";
+import webpackStream from "webpack-stream"
 
 let errorHandler;
 let emittyPug;
@@ -56,6 +57,7 @@ const {src, dest, series, parallel, watch} = gulp;
 const sass = gulpSass(dartSass);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const {webpack} = pkg;
 
 const argv = yargs(hideBin(process.argv))
 				.config(argvConfig).argv;
@@ -413,6 +415,21 @@ export const css = () => {
 }
 
 /**
+ * Сборка всех скриптов js
+ * @returns {*}
+ */
+export const js = () => {
+	return src(webpackConfig.entry, {base: $path.srcPath + "js/"})
+					.pipe(plumber({
+						errorHandler,
+					}))
+					.pipe(webpackStream(webpackConfig), webpack)
+					.pipe(dest(webpackConfig.output.path))
+					.pipe(browserSync.stream());
+
+}
+
+/**
  * Универсальный валидатор для HTML. Валидация порядка атрибутов, w3c, соответствие BEM. Запускать через npm run
  * @returns {*}
  */
@@ -428,26 +445,6 @@ export const htmllint = () => {
 	// .pipe(htmlValidator.analyzer({ignoreLevel: 'info'}))
 	// .pipe(htmlValidator.reporter())
 	// .pipe(bemValidator())
-}
-
-/**
- * Сборка всех скриптов js
- * @returns {*}
- */
-export const js = () => {
-	// return src($path.src.js, {base: $path.srcPath + "js/"})
-	// .pipe(sourcemaps.init())
-	// .pipe(plumber())
-	// .pipe(rigger())
-	// .pipe(dest($path.build.js))
-	// .pipe(uglify())
-	// .pipe(rename({
-	// 	suffix: ".min",
-	// 	extname: ".js"
-	// }))
-	// .pipe(sourcemaps.write())
-	// .pipe(dest($path.build.js))
-	// .pipe(browserSync.stream())
 }
 
 /**
