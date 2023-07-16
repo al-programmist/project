@@ -10,6 +10,7 @@ import svgConfig from "./gulp/svg-config.js";
 import {argvConfig} from "./gulp/argv-config.js";
 import {webpackConfig} from "./gulp/webpack.config.js"
 import {pngConfig} from "./gulp/png-config.js";
+
 import browserSync from "browser-sync";
 import {deleteSync} from "del";
 import ttf2woff from "gulp-ttf2woff";
@@ -30,14 +31,15 @@ import svgstore from "gulp-svgstore";
 import spritesmith from "gulp.spritesmith";
 import mergeStream from "merge-stream";
 import vinylBuffer from "vinyl-buffer";
+import emitty from "emitty";
 import pug from "gulp-pug";
 import htmlhint from "gulp-htmlhint";
 import {htmlValidator} from "gulp-w3c-html-validator";
 import bemValidator from "gulp-html-bem-validator";
 import sourcemaps from "gulp-sourcemaps";
-import autoprefixer from "gulp-autoprefixer";
-import cssBeautify from "gulp-cssbeautify";
-import cssnano from "gulp-cssnano";
+import autoprefixer from "autoprefixer";
+import postcss from "gulp-postcss";
+import cssnano from "cssnano";
 import stripComments from "gulp-strip-css-comments";
 import rename from "gulp-rename";
 import gulpSass from "gulp-sass";
@@ -50,7 +52,7 @@ import {hideBin} from 'yargs/helpers'
 let errorHandler;
 let emittyPug;
 
-const {src, dest} = gulp;
+const {src, dest, series, parallel, watch} = gulp;
 const sass = gulpSass(dartSass);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,6 +65,7 @@ argv.minifyHtml = argv.minifyHtml !== null ? !!argv.minifyHtml : argv.minify;
 argv.minifyCss = argv.minifyCss !== null ? !!argv.minifyCss : argv.minify;
 argv.minifyJs = argv.minifyJs !== null ? !!argv.minifyJs : argv.minify;
 argv.minifySvg = argv.minifySvg !== null ? !!argv.minifySvg : argv.minify;
+argv.minifyImg = argv.minifyImg !== null ? !!argv.minifyImg : argv.minify;
 
 if (argv.noResponsive) argv.responsive = false;
 
@@ -84,6 +87,7 @@ if (argv.production) {
 	argv.minifyCss = true;
 	argv.minifyJs = true;
 	argv.minifySvg = true;
+	argv.minifyImg = true;
 	argv.notify = true;
 	argv.open = false;
 	argv.throwErrors = true;
@@ -103,11 +107,11 @@ if (argv.throwErrors) {
 }
 export const config = (callback) => {
 	console.log(argv)
-	// console.log($path);
-	// console.log(breakpoints);
-	// console.log(reloader);
-	// console.log(faviconConfig);
-	// console.log(svgConfig);
+	console.log($path);
+	console.log(breakpoints);
+	console.log(reloader);
+	console.log(faviconConfig);
+	console.log(svgConfig);
 	callback();
 }
 
@@ -199,7 +203,7 @@ const woff2 = () => {
 /**
  * Запускает все конвертации шрифтов
  */
-export const fonts = gulp.parallel(
+const fonts = parallel(
 				woff,
 				woff2,
 );
@@ -232,10 +236,10 @@ export const favgenerate = (done) => {
  * Обработка картинок: ресайз и переименование для разных разрешений
  * @returns {*}
  */
-export const images = () => {
+const images = () => {
 	return src($path.src.images, {base: $path.srcPath + "/images/"})
 					.pipe($if(argv.responsive, responsive(imagesConfig.breakpoints, imagesConfig.settings)))
-					.pipe(image(imagesConfig.compression))
+					.pipe($if(argv.minifyImg, image(imagesConfig.compression)))
 					.pipe(dest($path.build.images))
 					.pipe(webp())
 					.pipe(dest($path.build.images))
@@ -246,9 +250,9 @@ export const images = () => {
  * Сжимает и переносит все иконки в отдельную папку
  * @returns {*}
  */
-export const icons = () => {
+const icons = () => {
 	return src($path.src.icons, {base: $path.srcPath + "/icon/"})
-					.pipe(image(imagesConfig.compression))
+					.pipe($if(argv.minifyImg, image(imagesConfig.compression)))
 					.pipe(dest($path.build.icons))
 					.pipe(webp())
 					.pipe(dest($path.build.icons))
@@ -259,7 +263,7 @@ export const icons = () => {
  * Собирает иконки svg в спрайт
  * @returns {*}
  */
-export const spritesvg = () => {
+const spritesvg = () => {
 	return src($path.src.svg, {base: $path.srcPath + "/icon/svg/"})
 					.pipe(plumber({
 						errorHandler,
@@ -283,7 +287,7 @@ export const spritesvg = () => {
  * Собирает иконки png в спрайт
  * @returns {*}
  */
-export const spritepng = () => {
+const spritepng = () => {
 	const spritesData = src($path.src.png.files, {base: $path.srcPath + "/icon/png/"})
 					.pipe(plumber({
 						errorHandler,
@@ -297,7 +301,7 @@ export const spritepng = () => {
 										errorHandler,
 									}))
 									.pipe(vinylBuffer())
-									.pipe(image(imagesConfig.compression))
+									.pipe($if(argv.minifyImg, image(imagesConfig.compression)))
 									.pipe(webp())
 									.pipe(dest($path.build.png.files)),
 					spritesData.css
@@ -307,17 +311,105 @@ export const spritepng = () => {
 }
 
 /**
+ * Запускает все конвертации спрайтов
+ */
+const sprites = parallel(
+				spritesvg,
+				spritepng,
+);
+
+/**
  * Собирает html-страницы из pug
  * @returns {*}
  */
 export const html = () => {
-	// return src($path.src.html, {base: $path.srcPath})
-	// .pipe(sourcemaps.init())
-	// .pipe(plumber())
-	// .pipe(pug({pretty: true}))
-	// .pipe(sourcemaps.write('.'))
-	// .pipe(dest($path.build.html))
-	// .pipe(browserSync.stream())
+	if (!emittyPug) {
+		emittyPug = emitty.setup('src', 'pug', {
+			makeVinylFile: true,
+		});
+	}
+
+	if (!argv.cache) {
+		return src($path.src.html, {base: $path.srcPath + '/pug/'})
+						.pipe(plumber({
+							errorHandler,
+						}))
+						.pipe($if(argv.debug, $debug()))
+						.pipe(pug({
+							pretty: argv.minifyHtml ? false : '\t',
+						}))
+						.pipe(dest($path.build.html))
+						.pipe(browserSync.stream())
+	}
+
+	return new Promise((resolve, reject) => {
+		emittyPug.scan(global.emittyPugChangedFile)
+						.then(() => {
+							src($path.src.htmlRoot)
+											.pipe(plumber({
+												errorHandler,
+											}))
+											.pipe(emittyPug.filter(global.emittyPugChangedFile))
+											.pipe($if(argv.debug, $debug()))
+											.pipe(pug({
+												pretty: argv.minifyHtml ? false : '\t',
+											}))
+											.pipe(dest($path.build.html))
+											.on('end', resolve)
+											.on('error', reject)
+											.pipe(browserSync.stream());
+						});
+	});
+}
+
+/**
+ * Компиляция стилей из SCSS в CSS. Линтер запускать через npm run stylelint
+ * @returns {*}
+ */
+export const css = () => {
+	const postcssPlugins = [
+		autoprefixer({
+			grid: 'autoplace',
+		}),
+	];
+
+	if (argv.minifyCss) {
+		postcssPlugins.push(
+						cssnano({
+							zIndex: false,
+							preset: [
+								'default',
+								{
+									discardComments: {
+										removeAll: true,
+									},
+								},
+							],
+						}),
+		);
+	}
+	return src($path.src.css, {base: $path.srcPath + "/scss/"})
+					.pipe(plumber({
+						errorHandler,
+					}))
+					.pipe($if(argv.debug, $debug()))
+					.pipe(sourcemaps.init())
+					.pipe(sass({
+						outputStyle: "expanded",
+						includePaths: [__dirname + "/node_modules"]
+					}))
+					.on('error', $notify.onError({
+						message: "Error: <%= error.message %>",
+						title: "Style Error"
+					}))
+					.pipe(postcss(postcssPlugins))
+					.pipe(sourcemaps.write('.'))
+					.pipe($if(argv.minifyCss, rename({
+						suffix: ".min",
+						extname: ".css"
+					})))
+					.pipe(dest($path.build.css))
+					.pipe(browserSync.stream());
 }
 
 /**
@@ -336,45 +428,6 @@ export const htmllint = () => {
 	// .pipe(htmlValidator.analyzer({ignoreLevel: 'info'}))
 	// .pipe(htmlValidator.reporter())
 	// .pipe(bemValidator())
-}
-
-/**
- * Компиляция стилей из SCSS в CSS. Линтер запускать через npm run stylelint
- * @returns {*}
- */
-export const css = () => {
-	// return src($path.src.css, {base: $path.srcPath + "/scss/"})
-	// .pipe(sourcemaps.init())
-	// .pipe(plumber())
-	// .pipe(sass({
-	// 	sourceMap: true,
-	// 	errLogToConsole: true,
-	// 	outputStyle: "expanded",
-	// 	includePaths: [__dirname + "/node_modules"]
-	// })
-	// 				.on('error', notifier.onError({
-	// 					message: "Error: <%= error.message %>",
-	// 					title: "Style Error"
-	// 				})))
-	// .pipe(autoprefixer())
-	// .pipe(cssBeautify({
-	// 	autosemicolon: true
-	// }))
-	// .pipe(dest($path.build.css))
-	// .pipe(cssnano({
-	// 	zIndex: false,
-	// 	discardComments: {
-	// 		removeAll: true
-	// 	}
-	// }))
-	// .pipe(stripComments())
-	// .pipe(rename({
-	// 	suffix: ".min",
-	// 	extname: ".css"
-	// }))
-	// .pipe(sourcemaps.write('.'))
-	// .pipe(dest($path.build.css))
-	// .pipe(browserSync.stream())
 }
 
 /**
@@ -401,17 +454,16 @@ export const js = () => {
  * Запускает слежение за выбранными каталогами
  */
 const lookup = () => {
-	gulp.watch([$path.watch.html], {usePolling: true}, html);
-	gulp.watch($path.watch.css, {usePolling: true}, css);
-	gulp.watch($path.watch.js, {usePolling: true}, js);
-	gulp.watch([$path.watch.images], images);
-	gulp.watch([$path.watch.icons], icons);
-	gulp.watch([$path.watch.svg], sprites);
-	gulp.watch([$path.watch.fonts], fonts);
-	gulp.watch([$path.watch.htaccess], {usePolling: true}, htaccess);
+	watch([$path.watch.html], {usePolling: true}, html);
+	watch($path.watch.css, {usePolling: true}, css);
+	// gulp.watch($path.watch.js, {usePolling: true}, js);
+	watch([$path.watch.icons], icons);
+	watch([$path.watch.png], spritepng);
+	watch([$path.watch.images], images);
+	watch([$path.watch.svg], spritesvg);
 }
 
-export const build = gulp.series(
+export const build = series(
 				clean,
 				setTarget,
 				htaccess,
@@ -420,17 +472,17 @@ export const build = gulp.series(
 				favicon,
 				icons,
 				images,
-				spritesvg,
-				// gulp.parallel(
-				// 				html,
-				// 				css,
+				sprites,
+				parallel(
+								html,
+								css,
 				// 				js,
-				// )
+				)
 );
 
-export default gulp.series(
+export default series(
 				build,
-				gulp.parallel(
+				parallel(
 								serve,
 								lookup
 				)

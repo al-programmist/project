@@ -26,6 +26,7 @@ const $path = {
 
     src: {
       html: [srcPath + "pages/*.pug", srcPath + "*.pug",],
+			htmlRoot: srcPath + "*.pug",
       css: [srcPath + "scss/*.scss", '!' + srcPath + "scss/_*.scss"],
       js: srcPath + "js/main.js",
       images: srcPath + "images/**/*",
@@ -50,7 +51,8 @@ const $path = {
       js: [srcPath + "js/**/*.js", srcPath + "blocks/**/*.js"],
       images: srcPath + "images/**/*",
       icons: srcPath + "icon/**/*",
-      svg: srcPath + "icon/**/*",
+      svg: srcPath + "icon/**/*.svg",
+			png: srcPath + "icon/**/*.png",
       fonts: srcPath + "fonts/**/*",
       htaccess: srcPath + ".htaccess",
     }

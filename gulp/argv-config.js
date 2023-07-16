@@ -6,6 +6,7 @@ const argvConfig = {
 	minifyCss: null,
 	minifyJs: null,
 	minifySvg: null,
+	minifyImg: null,
 	notify: true,
 	open: true,
 	responsive: true,
